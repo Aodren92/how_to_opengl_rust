@@ -23,6 +23,7 @@ fn print_help(exit: i32) {
 fn main() {
     let mut size = 0;
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
+    let mut draw_element: bool = false;
     match std::env::args().nth(1) {
         Some(arg) => {
                 match arg.as_str() {
@@ -31,6 +32,10 @@ fn main() {
                     },
                     "2"    => {
                         size = opengl::draw_simple_rectangle();
+                    },
+                    "3"    => {
+                        size = opengl::draw_simple_rectangle_with_indices();
+                        draw_element = true;
                     },
                     "help" => {
                         print_help(0);
@@ -44,6 +49,7 @@ fn main() {
             print_help(1);
         }
     }
+
 loop {
 
         unsafe {
@@ -53,7 +59,14 @@ loop {
             }
             glClear(gl33::GL_COLOR_BUFFER_BIT);
             glClearColor(0.9, 0.3, 0.5, 0.5);
-            glDrawArrays(GL_TRIANGLES, 0, size as i32);
+
+            if draw_element {
+                glDrawElements(GL_TRIANGLES, size as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
+            } else {
+                glDrawArrays(GL_TRIANGLES, 0, size as i32);
+
+            }
+
             sdl::SDL_GL_SwapWindow(sdl.window);
             sdl::SDL_Delay(20);
         }

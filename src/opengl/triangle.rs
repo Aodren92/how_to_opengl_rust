@@ -22,37 +22,19 @@ const VERTEX_SHADER_FRAGMENT: &str = r#"#version 330 core
     }
 "#;
 
-//type VERTEX = [f32; 3];
-//const VERTICES: [opengl::VERTEX; 3] = [
-//    [-0.5, -0.5, 0.0],
-//    [0.5, -0.5, 0.0],
-//    [0.0, 0.5, 0.0],
-//];
-
-//const VERTICES: [VERTEX; 3] = [
-//        // first triangle
-//    [ 0.5,  0.5,  0.0],  // top right
-//    [ 0.5, -0.5,  0.0],  // bottom right
-//    [-0.5,  0.5,  0.0],  // top left 
-//    // second triangle
-//    [ 0.5, -0.5, 0.0],  // bottom right
-//    [-0.5, -0.5, 0.0],  // bottom left
-//    [-0.5,  0.5, 0.0]   // top left
-//];
-
-
-pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N]) {
+pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:  Option<&[u32]>) {
 
     unsafe {
         // VBO Vertex buffer object
         let mut vbo = 0;
         // generate a buffer ID
         glGenBuffers(1, &mut vbo); 
-        //
+        assert!(vbo != 0);
         // VERTEX ARRAY OBJECT
         let mut vao = 0;
         glGenVertexArrays(1, &mut vao);
         glBindVertexArray(vao);
+        assert!(vao != 0);
 
         // Opengl has many types of buffer object, and the buffer type of vertex buffer is
         // GL_ARRAY_BUFFER
@@ -63,14 +45,34 @@ pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N]) {
         glBufferData(
             GL_ARRAY_BUFFER,
             core::mem::size_of_val(&vertices) as isize,
-            vertices.as_ptr().cast(), GL_STATIC_DRAW
+            vertices.as_ptr().cast(),
+            GL_STATIC_DRAW
             );
 
+        match opt_indices {
+            Some(indices) => {
+                let mut ebo =0;
+                glGenBuffers(1, &mut ebo);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
+                glBufferData(
+                    GL_ELEMENT_ARRAY_BUFFER,
+                    core::mem::size_of_val(indices) as isize,
+                    indices.as_ptr().cast(),
+                    GL_STATIC_DRAW
+                    );
+            },
+            None => {}
+        } 
+
         // Then set our vertex attributes pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, 0 /* GL_False */, core::mem::size_of::<opengl::VERTEX>().try_into().unwrap(), 0 as *const _);
+        glVertexAttribPointer(0,
+                              3,
+                              GL_FLOAT,
+                              0 /* GL_False */,
+                              core::mem::size_of::<opengl::VERTEX>().try_into().unwrap(),
+                              0 as *const _);
         glEnableVertexAttribArray(0);
-
-
 
         // Compile shader at runtime
         let vertex_shader;
