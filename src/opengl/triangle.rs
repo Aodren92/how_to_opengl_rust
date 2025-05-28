@@ -1,6 +1,9 @@
 use gl33::*;
 use gl33::global_loader::*;
 
+use crate::opengl;
+
+
 const VERTEX_SHADER_SOURCE : &str = r#"#version 330 core
     layout(location = 0) in vec3 aPos;
 
@@ -19,12 +22,26 @@ const VERTEX_SHADER_FRAGMENT: &str = r#"#version 330 core
     }
 "#;
 
-type VERTEX = [f32; 3];
-const VERTICES: [VERTEX; 3] = [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]];
+//type VERTEX = [f32; 3];
+//const VERTICES: [opengl::VERTEX; 3] = [
+//    [-0.5, -0.5, 0.0],
+//    [0.5, -0.5, 0.0],
+//    [0.0, 0.5, 0.0],
+//];
+
+//const VERTICES: [VERTEX; 3] = [
+//        // first triangle
+//    [ 0.5,  0.5,  0.0],  // top right
+//    [ 0.5, -0.5,  0.0],  // bottom right
+//    [-0.5,  0.5,  0.0],  // top left 
+//    // second triangle
+//    [ 0.5, -0.5, 0.0],  // bottom right
+//    [-0.5, -0.5, 0.0],  // bottom left
+//    [-0.5,  0.5, 0.0]   // top left
+//];
 
 
-
-pub fn draw_triangle() {
+pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N]) {
 
     unsafe {
         // VBO Vertex buffer object
@@ -45,12 +62,12 @@ pub fn draw_triangle() {
         // copy the previously vertex data into buffer's memory
         glBufferData(
             GL_ARRAY_BUFFER,
-            core::mem::size_of_val(&VERTICES) as isize,
-            VERTICES.as_ptr().cast(), GL_STATIC_DRAW
+            core::mem::size_of_val(&vertices) as isize,
+            vertices.as_ptr().cast(), GL_STATIC_DRAW
             );
 
         // Then set our vertex attributes pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, 0 /* GL_False */, core::mem::size_of::<VERTEX>().try_into().unwrap(), 0 as *const _);
+        glVertexAttribPointer(0, 3, GL_FLOAT, 0 /* GL_False */, core::mem::size_of::<opengl::VERTEX>().try_into().unwrap(), 0 as *const _);
         glEnableVertexAttribArray(0);
 
 
@@ -122,9 +139,5 @@ pub fn draw_triangle() {
         glDeleteShader(fragment_shader);
         glUseProgram(shader_program);
         glBindVertexArray(vao);
-
-
     }
-
-
 }

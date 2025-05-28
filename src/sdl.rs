@@ -212,9 +212,9 @@ impl SDL {
             {
                 SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 2);
             }
-            let title = std::ffi::CString::new("How to").unwrap();
+            let title = std::ffi::CString::new("How to opengl").unwrap();
             //XXX check window
-            window = SDL_CreateWindow(title.as_ptr(), 450, 600, SDL_WINDOW_OPENGL);
+            window = SDL_CreateWindow(title.as_ptr(), 450, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED |  SDL_WINDOW_INPUT_FOCUS);
             gl_context = SDL_GL_CreateContext(window);
             if gl_context.is_null() {
                 Self::print_error(String::from("SDL_GL_CreateContext"));
