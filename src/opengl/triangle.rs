@@ -4,24 +4,6 @@ use gl33::global_loader::*;
 use crate::opengl;
 
 
-const VERTEX_SHADER_SOURCE : &str = r#"#version 330 core
-    layout(location = 0) in vec3 aPos;
-
-    void main() 
-    {
-        gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    }
-"#;
-
-const VERTEX_SHADER_FRAGMENT: &str = r#"#version 330 core
-    out vec4 FragColor;
-
-    void main()
-    {
-        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-    }
-"#;
-
 pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:  Option<&[u32]>) {
 
     unsafe {
@@ -74,48 +56,12 @@ pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:
                               0 as *const _);
         glEnableVertexAttribArray(0);
 
-        // Compile shader at runtime
-        let vertex_shader;
-        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        if vertex_shader == 0 {
-            std::process::exit(1);
 
-        }
-        assert_ne!(vertex_shader, 0);
-        glShaderSource(vertex_shader, 1, &(VERTEX_SHADER_SOURCE.as_bytes().as_ptr().cast()), &(VERTEX_SHADER_SOURCE.len().try_into().unwrap()));
-        glCompileShader(vertex_shader);
+        let vertex_shader_src = opengl::load_shader("shader/simple_vertex.vert");
+        let vertex_shader = opengl::compile_shader(vertex_shader_src, GL_VERTEX_SHADER);
 
-        // check if shader as succefuly compilated
-        let mut success = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &mut success); 
-        if success == 0 {
-            // XXX
-            let mut v: Vec<u8> = Vec::with_capacity(1024);
-            let mut log_len: i32 = 0;
-            glGetShaderInfoLog(vertex_shader, 1024, &mut log_len, v.as_mut_ptr().cast());
-            v.set_len(log_len.try_into().unwrap());
-
-            panic!("Error compile shader: {}", String::from_utf8_lossy(&v));
-        }
-
-        // FRAGMENT SHADER
-        let fragment_shader;
-        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        assert_ne!(fragment_shader, 0);
-        glShaderSource(fragment_shader, 1, &(VERTEX_SHADER_FRAGMENT.as_bytes().as_ptr().cast()), &(VERTEX_SHADER_FRAGMENT.len().try_into().unwrap()));
-        glCompileShader(fragment_shader);
-        // check if shader as succefuly compilated
-        let mut success = 0;
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &mut success); 
-        if success == 0 {
-            // XXX
-            let mut v: Vec<u8> = Vec::with_capacity(1024);
-            let mut log_len: i32 = 0;
-            glGetShaderInfoLog(fragment_shader, 1024, &mut log_len, v.as_mut_ptr().cast());
-            v.set_len(log_len.try_into().unwrap());
-
-            panic!("Error compile shader: {}", String::from_utf8_lossy(&v));
-        }
+        let fragement_shader_src = opengl::load_shader("shader/simple_fragment.frag");
+        let fragment_shader = opengl::compile_shader(fragement_shader_src, GL_FRAGMENT_SHADER);
 
         // shader program
         let shader_program;

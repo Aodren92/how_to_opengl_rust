@@ -9,6 +9,7 @@ fn print_help(exit: i32) {
         usage:
             1: print simple triangle
             2: print simple rectangle
+            3: print simple rectangle but with EBO(Element Buffer Object)
         
             help:
                 print this help
