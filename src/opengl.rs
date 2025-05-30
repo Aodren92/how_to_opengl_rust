@@ -5,53 +5,153 @@ pub type VERTEX = [f32; 3];
 use gl33::*;
 use gl33::global_loader::*;
 
-pub fn draw_simple_triangle() -> usize {
-
-    let vertices: [VERTEX; 3] = [
-        [-0.5, -0.5, 0.0],
-        [0.5, -0.5, 0.0],
-        [0.0, 0.5, 0.0],
-    ];
-    triangle::draw_triangle(vertices, None);
-    return vertices.len();
+pub struct GlTriangle {
+    pub vao:                    u32,
+    pub vbo:                    u32,
+    pub vertex_shader_src:      String,
+    pub fragment_shader_src:    String,
+    pub vertices:               Vec<f32>,
+    pub opt_indices:            Option<Vec<u32>>,
 }
 
-pub fn draw_simple_rectangle() -> usize {
+pub fn draw_simple_triangle() -> GlTriangle {
 
-   let vertices: [VERTEX; 6] = [
-           // first triangle
-       [ 0.5,  0.5,  0.0],  // top right
-       [ 0.5, -0.5,  0.0],  // bottom right
-       [-0.5,  0.5,  0.0],  // top left 
-       // second triangle
-       [ 0.5, -0.5, 0.0],  // bottom right
-       [-0.5, -0.5, 0.0],  // bottom left
-       [-0.5,  0.5, 0.0]   // top left
-   ];
-   triangle::draw_triangle(vertices, None);
-   return vertices.len();
+    let mut vertices = Vec::new();
+    
+    vertices.push(-0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(0.0);
+
+
+    let mut gl_triangle: GlTriangle = GlTriangle{ 
+        vao:                    0,
+        vbo:                    0,
+        vertex_shader_src:      String::from("shader/simple_vertex.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment.frag"),
+        vertices:               vertices,
+        opt_indices:            None
+    };
+    triangle::draw_triangle(&mut gl_triangle);
+    return gl_triangle;
 }
 
-pub fn draw_simple_rectangle_with_indices() -> usize {
+pub fn draw_simple_triangle_color() -> GlTriangle {
 
-   let vertices: [VERTEX; 4] = [
-       [ 0.5,  0.5,  0.0],  // top right
-       [ 0.5, -0.5,  0.0],  // bottom right
-       [-0.5, -0.5,  0.0],  // bottom left
-       [-0.5,  0.5,  0.0]   // top left
-   ];
+    let mut vertices = Vec::new();
+    
+    vertices.push(-0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(0.0);
 
-   let indices: [u32; 6] = [
-       0, 1, 3,
-       1, 2, 3
-   ];
-   triangle::draw_triangle(vertices, Some(&indices));
-   return indices.len();
+    let mut gl_triangle: GlTriangle = GlTriangle{ 
+        vao:                    0,
+        vbo:                    0,
+        vertex_shader_src:      String::from("shader/simple_vertex_color.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment_color.frag"),
+        vertices:               vertices,
+        opt_indices:            None
+    };
+    triangle::draw_triangle(&mut gl_triangle);
+    return gl_triangle;
+}
+
+
+pub fn draw_simple_rectangle() -> GlTriangle {
+
+    let mut vertices = Vec::new();
+
+    vertices.push(0.5);
+    vertices.push(0.5);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(-0.5);
+    vertices.push(0.5);
+    vertices.push(0.0);
+
+    vertices.push(0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(-0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(-0.5);
+    vertices.push(0.5);
+    vertices.push(0.0);
+
+
+    let mut gl_triangle: GlTriangle = GlTriangle{ 
+        vao:                    0,
+        vbo:                    0,
+        vertex_shader_src:      String::from("shader/simple_vertex.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment.frag"),
+        vertices:               vertices,
+        opt_indices:            None
+    };
+    triangle::draw_triangle(&mut gl_triangle);
+    return gl_triangle;
+}
+
+pub fn draw_simple_rectangle_with_indices() -> GlTriangle {
+
+    let mut vertices = Vec::new();
+
+    vertices.push(0.5);
+    vertices.push(0.5);
+    vertices.push(0.0);
+
+    vertices.push(0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+
+    vertices.push(-0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+
+    vertices.push(-0.5);
+    vertices.push(0.5);
+    vertices.push(0.0);
+
+
+    let mut indices = Vec::new();
+
+    indices.push(0);
+    indices.push(1);
+    indices.push(3);
+    indices.push(1);
+    indices.push(2);
+    indices.push(3);
+
+
+    let mut gl_triangle: GlTriangle = GlTriangle{ 
+        vao:                    0,
+        vbo:                    0,
+        vertex_shader_src:      String::from("shader/simple_vertex.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment.frag"),
+        vertices:               vertices,
+        opt_indices:            Some(indices)
+    };
+    triangle::draw_triangle(&mut gl_triangle);
+    return gl_triangle;
 }
 
 
 fn load_shader(src: &str) -> String {
-    std::fs::read_to_string(src).expect("Failed to read shader file")
+
+    std::fs::read_to_string(src).expect(format!("Failed to read shader file {src}").as_str())
 }
 
 fn compile_shader(str: String, r#type: ShaderType) -> u32 {

@@ -4,7 +4,7 @@ use gl33::global_loader::*;
 use gl33::GL_TRIANGLES;
 
 
-fn print_help(exit: i32) {
+fn print_help(exit: i32) -> ! {
     let str = r"
         usage:
             1: print simple triangle
@@ -22,21 +22,22 @@ fn print_help(exit: i32) {
 
 
 fn main() {
-    let mut size = 0;
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
-    let mut draw_element: bool = false;
+    let triangle: opengl::GlTriangle;
     match std::env::args().nth(1) {
         Some(arg) => {
                 match arg.as_str() {
                     "1"    => {
-                        size = opengl::draw_simple_triangle();
+                        triangle = opengl::draw_simple_triangle();
                     },
                     "2"    => {
-                        size = opengl::draw_simple_rectangle();
+                        triangle = opengl::draw_simple_rectangle();
                     },
                     "3"    => {
-                        size = opengl::draw_simple_rectangle_with_indices();
-                        draw_element = true;
+                        triangle = opengl::draw_simple_rectangle_with_indices();
+                    },
+                    "4"    => {
+                        triangle = opengl::draw_simple_triangle_color();
                     },
                     "help" => {
                         print_help(0);
@@ -61,10 +62,12 @@ loop {
             glClear(gl33::GL_COLOR_BUFFER_BIT);
             glClearColor(0.9, 0.3, 0.5, 0.5);
 
-            if draw_element {
-                glDrawElements(GL_TRIANGLES, size as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
-            } else {
-                glDrawArrays(GL_TRIANGLES, 0, size as i32);
+            match &triangle.opt_indices {
+                Some(indices) => {
+                    glDrawElements(GL_TRIANGLES, indices.len() as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
+
+                },
+                None => glDrawArrays(GL_TRIANGLES, 0, triangle.vertices.len() as i32)
 
             }
 

@@ -4,7 +4,8 @@ use gl33::global_loader::*;
 use crate::opengl;
 
 
-pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:  Option<&[u32]>) {
+//pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:  Option<&[u32]>) {
+pub fn draw_triangle(gl_triangle: &mut opengl::GlTriangle) {
 
     unsafe {
         // VBO Vertex buffer object
@@ -18,28 +19,32 @@ pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:
         glBindVertexArray(vao);
         assert!(vao != 0);
 
+        gl_triangle.vao = vao;
+        gl_triangle.vbo = vbo;
+
         // Opengl has many types of buffer object, and the buffer type of vertex buffer is
         // GL_ARRAY_BUFFER
         // We bind the new id to the type of buffer
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
         // copy the previously vertex data into buffer's memory
+
         glBufferData(
             GL_ARRAY_BUFFER,
-            core::mem::size_of_val(&vertices) as isize,
-            vertices.as_ptr().cast(),
+            (gl_triangle.vertices.len() * std::mem::size_of::<f32>()) as isize, 
+            gl_triangle.vertices.as_ptr().cast(),
             GL_STATIC_DRAW
             );
 
-        match opt_indices {
+        match &gl_triangle.opt_indices {
             Some(indices) => {
-                let mut ebo =0;
+                let mut ebo = 0;
                 glGenBuffers(1, &mut ebo);
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
                 glBufferData(
                     GL_ELEMENT_ARRAY_BUFFER,
-                    core::mem::size_of_val(indices) as isize,
+                    (indices.len() * std::mem::size_of::<u32>()) as isize, 
                     indices.as_ptr().cast(),
                     GL_STATIC_DRAW
                     );
@@ -57,10 +62,10 @@ pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:
         glEnableVertexAttribArray(0);
 
 
-        let vertex_shader_src = opengl::load_shader("shader/simple_vertex.vert");
+        let vertex_shader_src = opengl::load_shader(gl_triangle.vertex_shader_src.as_str());
         let vertex_shader = opengl::compile_shader(vertex_shader_src, GL_VERTEX_SHADER);
 
-        let fragement_shader_src = opengl::load_shader("shader/simple_fragment.frag");
+        let fragement_shader_src = opengl::load_shader(gl_triangle.fragment_shader_src.as_str());
         let fragment_shader = opengl::compile_shader(fragement_shader_src, GL_FRAGMENT_SHADER);
 
         // shader program
