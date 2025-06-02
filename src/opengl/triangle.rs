@@ -90,7 +90,7 @@ pub fn draw_triangle(gl_triangle: &mut opengl::GlTriangle) {
 
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
-        glUseProgram(shader_program);
-        glBindVertexArray(vao);
+      //  glUseProgram(shader_program);
+        gl_triangle.shader_program = shader_program;
     }
 }

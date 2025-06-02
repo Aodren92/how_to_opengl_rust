@@ -1,17 +1,43 @@
 pub mod triangle;
-
+use crate::sdl;
 pub type VERTEX = [f32; 3];
 
 use gl33::*;
 use gl33::global_loader::*;
 
+
+enum TriangleType {
+    NORMAL,
+    UNIFORM,
+}
+
 pub struct GlTriangle {
     pub vao:                    u32,
     pub vbo:                    u32,
+    pub shader_program:         u32,
     pub vertex_shader_src:      String,
     pub fragment_shader_src:    String,
     pub vertices:               Vec<f32>,
     pub opt_indices:            Option<Vec<u32>>,
+    r#type:                     TriangleType,
+}
+
+impl GlTriangle {
+    pub fn draw(&self) {
+        match self.r#type {
+            TriangleType::UNIFORM   => {
+                unsafe {
+                    let time_value = (sdl::SDL_GetTicks() as f32 / 1000.0) as f32;
+                    let green_value = time_value.sin() / 2.0 + 0.5;
+                    let vertex_color_location = glGetUniformLocation(self.shader_program, std::ffi::CString::new("ourColor").unwrap().as_ptr() as *const u8);
+                    glUniform4f(vertex_color_location, 0.0, green_value as f32, 0.0, 1.0);
+                }
+            },
+            TriangleType::NORMAL    => {
+
+            },
+        }
+    }
 }
 
 pub fn draw_simple_triangle() -> GlTriangle {
@@ -32,10 +58,12 @@ pub fn draw_simple_triangle() -> GlTriangle {
     let mut gl_triangle: GlTriangle = GlTriangle{ 
         vao:                    0,
         vbo:                    0,
+        shader_program:         0,
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment.frag"),
         vertices:               vertices,
-        opt_indices:            None
+        opt_indices:            None,
+        r#type:                 TriangleType::NORMAL,
     };
     triangle::draw_triangle(&mut gl_triangle);
     return gl_triangle;
@@ -58,10 +86,12 @@ pub fn draw_simple_triangle_color() -> GlTriangle {
     let mut gl_triangle: GlTriangle = GlTriangle{ 
         vao:                    0,
         vbo:                    0,
+        shader_program:         0,
         vertex_shader_src:      String::from("shader/simple_vertex_color.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment_color.frag"),
         vertices:               vertices,
-        opt_indices:            None
+        opt_indices:            None,
+        r#type:                 TriangleType::NORMAL,
     };
     triangle::draw_triangle(&mut gl_triangle);
     return gl_triangle;
@@ -96,10 +126,12 @@ pub fn draw_simple_rectangle() -> GlTriangle {
     let mut gl_triangle: GlTriangle = GlTriangle{ 
         vao:                    0,
         vbo:                    0,
+        shader_program:         0,
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment.frag"),
         vertices:               vertices,
-        opt_indices:            None
+        opt_indices:            None,
+        r#type:                 TriangleType::NORMAL,
     };
     triangle::draw_triangle(&mut gl_triangle);
     return gl_triangle;
@@ -139,14 +171,46 @@ pub fn draw_simple_rectangle_with_indices() -> GlTriangle {
     let mut gl_triangle: GlTriangle = GlTriangle{ 
         vao:                    0,
         vbo:                    0,
+        shader_program:         0,
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment.frag"),
         vertices:               vertices,
-        opt_indices:            Some(indices)
+        opt_indices:            Some(indices),
+        r#type:                 TriangleType::NORMAL,
     };
     triangle::draw_triangle(&mut gl_triangle);
     return gl_triangle;
 }
+
+pub fn draw_simple_triangle_uniform() -> GlTriangle {
+
+    let mut vertices = Vec::new();
+    
+    vertices.push(-0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(-0.5);
+    vertices.push(0.0);
+    vertices.push(0.0);
+    vertices.push(0.5);
+    vertices.push(0.0);
+
+
+    let mut gl_triangle: GlTriangle = GlTriangle{ 
+        vao:                    0,
+        vbo:                    0,
+        shader_program:         0,
+        vertex_shader_src:      String::from("shader/simple_vertex.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment_uniform.frag"),
+        vertices:               vertices,
+        opt_indices:            None,
+        r#type:                 TriangleType::UNIFORM,
+    };
+    triangle::draw_triangle(&mut gl_triangle);
+    return gl_triangle;
+}
+
 
 
 fn load_shader(src: &str) -> String {

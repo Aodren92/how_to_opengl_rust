@@ -178,6 +178,7 @@ unsafe extern "C" {
     fn SDL_GL_SetSwapInterval(interval: std::os::raw::c_int) -> bool;
 
     pub fn SDL_Delay(ms: std::os::raw::c_int);
+    pub fn SDL_GetTicks() -> u64;
     // error
     pub fn SDL_GetError() -> *const std::ffi::c_char;
 }

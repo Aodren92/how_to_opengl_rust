@@ -27,22 +27,25 @@ fn main() {
     match std::env::args().nth(1) {
         Some(arg) => {
                 match arg.as_str() {
-                    "1"    => {
+                    "1"     => {
                         triangle = opengl::draw_simple_triangle();
                     },
-                    "2"    => {
+                    "2"     => {
                         triangle = opengl::draw_simple_rectangle();
                     },
-                    "3"    => {
+                    "3"     => {
                         triangle = opengl::draw_simple_rectangle_with_indices();
                     },
-                    "4"    => {
+                    "4"     => {
                         triangle = opengl::draw_simple_triangle_color();
                     },
-                    "help" => {
+                    "5"     => {
+                        triangle = opengl::draw_simple_triangle_uniform();
+                    }
+                    "help"  => {
                         print_help(0);
                     }
-                    _ => { 
+                    _       => { 
                         print_help(1);
                     }
                 }
@@ -59,16 +62,21 @@ loop {
             if sdl::event::SDL_PollEvent(raw.as_mut_ptr()) == true {
                 sdl::event::parse_event(raw.assume_init());
             }
-            glClear(gl33::GL_COLOR_BUFFER_BIT);
             glClearColor(0.9, 0.3, 0.5, 0.5);
+            glClear(gl33::GL_COLOR_BUFFER_BIT);
 
+            glUseProgram(triangle.shader_program);
+
+            triangle.draw();
+
+
+            glBindVertexArray(triangle.vao);
             match &triangle.opt_indices {
                 Some(indices) => {
                     glDrawElements(GL_TRIANGLES, indices.len() as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
 
                 },
                 None => glDrawArrays(GL_TRIANGLES, 0, triangle.vertices.len() as i32)
-
             }
 
             sdl::SDL_GL_SwapWindow(sdl.window);
