@@ -18,6 +18,8 @@ pub struct GlTriangle {
     pub vertex_shader_src:      String,
     pub fragment_shader_src:    String,
     pub vertices:               Vec<f32>,
+    pub strides:                i32,
+    pub strides_color:          i32,
     pub opt_indices:            Option<Vec<u32>>,
     r#type:                     TriangleType,
 }
@@ -62,6 +64,8 @@ pub fn draw_simple_triangle() -> GlTriangle {
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment.frag"),
         vertices:               vertices,
+        strides:                3 * std::mem::size_of::<f32>() as i32,
+        strides_color:          0,
         opt_indices:            None,
         r#type:                 TriangleType::NORMAL,
     };
@@ -90,6 +94,8 @@ pub fn draw_simple_triangle_color() -> GlTriangle {
         vertex_shader_src:      String::from("shader/simple_vertex_color.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment_color.frag"),
         vertices:               vertices,
+        strides:                3 * std::mem::size_of::<f32>() as i32,
+        strides_color:          0,
         opt_indices:            None,
         r#type:                 TriangleType::NORMAL,
     };
@@ -130,6 +136,8 @@ pub fn draw_simple_rectangle() -> GlTriangle {
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment.frag"),
         vertices:               vertices,
+        strides:                3 * std::mem::size_of::<f32>() as i32,
+        strides_color:          0,
         opt_indices:            None,
         r#type:                 TriangleType::NORMAL,
     };
@@ -175,6 +183,8 @@ pub fn draw_simple_rectangle_with_indices() -> GlTriangle {
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment.frag"),
         vertices:               vertices,
+        strides:                3 * std::mem::size_of::<f32>() as i32,
+        strides_color:          0,
         opt_indices:            Some(indices),
         r#type:                 TriangleType::NORMAL,
     };
@@ -204,6 +214,8 @@ pub fn draw_simple_triangle_uniform() -> GlTriangle {
         vertex_shader_src:      String::from("shader/simple_vertex.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment_uniform.frag"),
         vertices:               vertices,
+        strides:                3 * std::mem::size_of::<f32>() as i32,
+        strides_color:          0,
         opt_indices:            None,
         r#type:                 TriangleType::UNIFORM,
     };
@@ -211,6 +223,31 @@ pub fn draw_simple_triangle_uniform() -> GlTriangle {
     return gl_triangle;
 }
 
+pub fn draw_simple_triangle_fragment_interpollation() -> GlTriangle {
+
+    let vertices = Vec::from([
+            //positions     //colors
+             0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 
+            -0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
+             0.0,  0.5, 0.0, 0.0, 0.0, 1.0,
+    ]);
+
+
+    let mut gl_triangle: GlTriangle = GlTriangle{ 
+        vao:                    0,
+        vbo:                    0,
+        shader_program:         0,
+        vertex_shader_src:      String::from("shader/simple_vertex_interpollation.frag"),
+        fragment_shader_src:    String::from("shader/simple_fragment_interpollation.frag"),
+        vertices:               vertices,
+        strides:                6 * std::mem::size_of::<f32>() as i32,
+        strides_color:          6 * std::mem::size_of::<f32>() as i32,
+        opt_indices:            None,
+        r#type:                 TriangleType::UNIFORM,
+    };
+    triangle::draw_triangle(&mut gl_triangle);
+    return gl_triangle;
+}
 
 
 fn load_shader(src: &str) -> String {

@@ -57,9 +57,21 @@ pub fn draw_triangle(gl_triangle: &mut opengl::GlTriangle) {
                               3,
                               GL_FLOAT,
                               0 /* GL_False */,
-                              core::mem::size_of::<opengl::VERTEX>().try_into().unwrap(),
+                              gl_triangle.strides, //3 * std::mem::size_of::<f32>() as i32,
                               0 as *const _);
         glEnableVertexAttribArray(0);
+
+        if gl_triangle.strides_color != 0 {
+            glVertexAttribPointer(1,
+                                  3,
+                                  GL_FLOAT,
+                                  0 /* GL_False */,
+                                  gl_triangle.strides_color, //3 * std::mem::size_of::<f32>() as i32,
+                                  (3 * std::mem::size_of::<f32>()) as *const std::ffi::c_void
+                                  );
+            glEnableVertexAttribArray(1);
+        }
+
 
 
         let vertex_shader_src = opengl::load_shader(gl_triangle.vertex_shader_src.as_str());

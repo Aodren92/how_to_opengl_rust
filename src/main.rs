@@ -42,6 +42,9 @@ fn main() {
                     "5"     => {
                         triangle = opengl::draw_simple_triangle_uniform();
                     }
+                    "6"     => {
+                        triangle = opengl::draw_simple_triangle_fragment_interpollation();
+                    }
                     "help"  => {
                         print_help(0);
                     }
