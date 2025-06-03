@@ -2,18 +2,11 @@ pub mod shader;
 
 pub fn draw_simple_triangle() -> shader::Shader {
 
-    let mut vertices = Vec::new();
-    
-    vertices.push(-0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(0.0);
-
+    let vertices = Vec::from([
+            -0.5, -0.5,  0.0,
+             0.5, -0.5,  0.0,
+             0.0,  0.5,  0.0
+    ]);
 
     let mut shader: shader::Shader = shader::Shader{ 
         vao:                    0,
@@ -38,17 +31,11 @@ pub fn draw_simple_triangle() -> shader::Shader {
 
 pub fn draw_simple_triangle_color() -> shader::Shader {
 
-    let mut vertices = Vec::new();
-    
-    vertices.push(-0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(0.0);
+    let vertices = Vec::from([
+            -0.5, -0.5,  0.0,
+             0.5, -0.5,  0.0,
+             0.0,  0.5,  0.0
+    ]);
 
     let mut shader : shader::Shader = shader::Shader{ 
         vao:                    0,
@@ -74,28 +61,14 @@ pub fn draw_simple_triangle_color() -> shader::Shader {
 
 pub fn draw_simple_rectangle() -> shader::Shader {
 
-    let mut vertices = Vec::new();
-
-    vertices.push(0.5);
-    vertices.push(0.5);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(-0.5);
-    vertices.push(0.5);
-    vertices.push(0.0);
-
-    vertices.push(0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(-0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(-0.5);
-    vertices.push(0.5);
-    vertices.push(0.0);
-
+    let vertices = Vec::from([
+             0.5,  0.5,  0.0,
+             0.5, -0.5,  0.0,
+            -0.5,  0.5,  0.0,
+             0.5, -0.5,  0.0,
+            -0.5, -0.5,  0.0,
+            -0.5,  0.5,  0.0,
+    ]);
 
     let mut shader: shader::Shader = shader::Shader{ 
         vao:                    0,
@@ -156,17 +129,12 @@ pub fn draw_simple_rectangle_with_indices() -> shader::Shader {
 
 pub fn draw_simple_triangle_uniform() -> shader::Shader {
 
-    let mut vertices = Vec::new();
-    
-    vertices.push(-0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(-0.5);
-    vertices.push(0.0);
-    vertices.push(0.0);
-    vertices.push(0.5);
-    vertices.push(0.0);
+    let vertices = Vec::from([
+            //positions
+             -0.5, -0.5, 0.0,
+              0.5, -0.5, 0.0,
+              0.0,  0.5, 0.0,
+    ]);
 
 
     let mut shader: shader::Shader = shader::Shader { 

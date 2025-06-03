@@ -1,8 +1,6 @@
 mod sdl;
 mod opengl;
 use gl33::global_loader::*;
-use gl33::GL_TRIANGLES;
-
 
 fn print_help(exit: i32) -> ! {
     let str = r"
@@ -15,12 +13,9 @@ fn print_help(exit: i32) -> ! {
             6: print simple triangle fragment interpollation
             7: print simple triangle texture
             8: print simple rectangle texture
-        
             help:
                 print this help
-
     ";
-
     println!("{str}");
     std::process::exit(exit);
 }
@@ -59,7 +54,7 @@ fn main() {
                         _       => { 
                             print_help(1);
                         }
-                }
+                    }
                 }
             }
         }
@@ -68,10 +63,7 @@ fn main() {
         }
     }
 
-
-
 loop {
-
         unsafe {
             let mut raw = std::mem::MaybeUninit::uninit();
             if sdl::event::SDL_PollEvent(raw.as_mut_ptr()) == true {
