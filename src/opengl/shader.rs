@@ -70,6 +70,7 @@ impl Shader {
                 }
                 let mut texture = 0;
                 glGenTextures(1, &mut texture);
+                glEnable(GL_TEXTURE_2D);
                 shader.texture = texture;
                 glBindTexture(GL_TEXTURE_2D, texture);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT.0 as i32);
@@ -83,12 +84,11 @@ impl Shader {
                              (*surface).w,
                              (*surface).h,
                              0,
-                             GL_RGBA,
+                             GL_BGRA,
                              GL_UNSIGNED_BYTE,
                              (*surface).pixels
                             );
                 glGenerateMipmap(GL_TEXTURE_2D);
-                SDL_DestroySurface(surface);
                 glVertexAttribPointer(2,
                                       2,
                                       GL_FLOAT,
@@ -97,6 +97,7 @@ impl Shader {
                                       shader.offset_texture as *const std::ffi::c_void,
                                       );
                 glEnableVertexAttribArray(2);
+                SDL_DestroySurface(surface);
             }
         }
     }
@@ -183,6 +184,8 @@ impl Shader {
             glAttachShader(shader_program, fragment_shader);
             glLinkProgram(shader_program);
 
+            Self::load_texture(self);
+
             let mut success = 0;
             glGetProgramiv(shader_program, GL_LINK_STATUS, &mut success); 
             if success == 0 {
@@ -194,7 +197,6 @@ impl Shader {
                 panic!("Error link Program: {}", String::from_utf8_lossy(&v));
             }
 
-            Self::load_texture(self);
             glDeleteShader(vertex_shader);
             glDeleteShader(fragment_shader);
             self.shader_program = shader_program;
