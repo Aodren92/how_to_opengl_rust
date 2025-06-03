@@ -45,6 +45,12 @@ fn main() {
                     "6"     => {
                         triangle = opengl::draw_simple_triangle_fragment_interpollation();
                     }
+                    "7"     => {
+                        triangle = opengl::draw_simple_triangle_texture();
+                    }
+                    "8"     => {
+                        triangle = opengl::draw_simple_rectangle_texture();
+                    }
                     "help"  => {
                         print_help(0);
                     }
@@ -71,16 +77,6 @@ loop {
             glUseProgram(triangle.shader_program);
 
             triangle.draw();
-
-
-            glBindVertexArray(triangle.vao);
-            match &triangle.opt_indices {
-                Some(indices) => {
-                    glDrawElements(GL_TRIANGLES, indices.len() as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
-
-                },
-                None => glDrawArrays(GL_TRIANGLES, 0, triangle.vertices.len() as i32)
-            }
 
             sdl::SDL_GL_SwapWindow(sdl.window);
             sdl::SDL_Delay(20);

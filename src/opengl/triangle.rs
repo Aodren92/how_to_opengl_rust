@@ -1,8 +1,51 @@
 use gl33::*;
 use gl33::global_loader::*;
 
+use crate::sdl::*;
+
 use crate::opengl;
 
+fn load_texture(triangle: &mut opengl::GlTriangle) {
+    if let Some(texture_src) = &triangle.texture_src {
+        unsafe {
+
+            let surface = IMG_Load(std::ffi::CString::new(texture_src.clone()).unwrap().as_ptr());
+            if surface.is_null() {
+                println!("Error loading texture{texture_src}");
+                std::process::exit(1);
+            }
+            let mut texture = 0;
+            glGenTextures(1, &mut texture);
+            triangle.texture = texture;
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT.0 as i32);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT.0 as i32);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR.0 as i32);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR.0 as i32);
+
+            glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         GL_RGBA.0 as i32,
+                         (*surface).w,
+                         (*surface).h,
+                         0,
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         (*surface).pixels
+            );
+            glGenerateMipmap(GL_TEXTURE_2D);
+            SDL_DestroySurface(surface);
+            glVertexAttribPointer(2,
+                                  2,
+                                  GL_FLOAT,
+                                  0 /* GL_False */,
+                                  triangle.strides_texture, //3 * std::mem::size_of::<f32>() as i32,
+                                  triangle.offset_texture as *const std::ffi::c_void,
+                                  );
+            glEnableVertexAttribArray(2);
+        }
+    }
+}
 
 //pub fn draw_triangle<const N: usize>(vertices: [opengl::VERTEX; N], opt_indices:  Option<&[u32]>) {
 pub fn draw_triangle(gl_triangle: &mut opengl::GlTriangle) {
@@ -67,7 +110,7 @@ pub fn draw_triangle(gl_triangle: &mut opengl::GlTriangle) {
                                   GL_FLOAT,
                                   0 /* GL_False */,
                                   gl_triangle.strides_color, //3 * std::mem::size_of::<f32>() as i32,
-                                  (3 * std::mem::size_of::<f32>()) as *const std::ffi::c_void
+                                  gl_triangle.offset_color as *const std::ffi::c_void,
                                   );
             glEnableVertexAttribArray(1);
         }
@@ -99,6 +142,9 @@ pub fn draw_triangle(gl_triangle: &mut opengl::GlTriangle) {
 
             panic!("Error link Program: {}", String::from_utf8_lossy(&v));
         }
+
+
+        load_texture(gl_triangle);
 
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);

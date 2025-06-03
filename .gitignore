@@ -24,5 +24,6 @@ target/
 #
 Cargo.lock
 sdl/
+SDL_Image/
 
 *.DS_Store

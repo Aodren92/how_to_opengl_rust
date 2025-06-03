@@ -1,4 +1,5 @@
 pub mod event;
+pub mod surface;
 use gl33::global_loader::load_global_gl;
 
 type InitFlag = u32;
@@ -147,7 +148,6 @@ pub struct SDL_Window {
         core::marker::PhantomData<(*mut u8, core::marker::PhantomPinned)>, 
 }
 
-
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]
 pub struct SdlGlcontext(pub *mut std::os::raw::c_void);
@@ -158,9 +158,9 @@ impl SdlGlcontext {
   }
 }
 
+
+
 unsafe extern "C" {
-
-
     // init
     fn SDL_Init(flags: InitFlag) -> bool;
     fn SDL_CreateWindow(title: *const  std::ffi::c_char , w: i32, h: i32, flags: u64) -> *mut SDL_Window;
@@ -171,8 +171,6 @@ unsafe extern "C" {
     fn SDL_GL_MakeCurrent(window: *mut SDL_Window, context: SdlGlcontext) -> bool;
     fn SDL_GL_GetProcAddress(proc: *const i8) -> *mut std::os::raw::c_void;
     pub fn SDL_GL_SwapWindow(window: *mut SDL_Window) -> bool;
-
-
     //param interval 0 for immediate updates, 1 for updates synchronized with
     //               the vertical retrace, -1 for adaptive vsync.
     fn SDL_GL_SetSwapInterval(interval: std::os::raw::c_int) -> bool;
@@ -181,6 +179,9 @@ unsafe extern "C" {
     pub fn SDL_GetTicks() -> u64;
     // error
     pub fn SDL_GetError() -> *const std::ffi::c_char;
+
+    pub fn IMG_Load(file: *const std::ffi::c_char) -> *mut surface::SDLSurface; 
+    pub fn SDL_DestroySurface(surface: *mut surface::SDLSurface);
 }
 
 
