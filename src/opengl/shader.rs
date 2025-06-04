@@ -61,6 +61,26 @@ impl Shader {
         shader
     }
 
+    fn flip_surface(surface: sdl::surface::SDLSurface) {
+
+        let pitch = surface.pitch as usize;
+        let height = surface.h as usize;
+        let pixels = surface.pixels as *mut u8;
+
+        let mut temp_row = vec![0u8; pitch];
+
+        for i in 0..(height / 2) {
+            unsafe { 
+                let row1 = pixels.add(i * pitch);
+                let row2 = pixels.add((height - i - 1) * pitch);
+
+                std::ptr::copy_nonoverlapping(row1, temp_row.as_mut_ptr(), pitch);
+                std::ptr::copy_nonoverlapping(row2, row1, pitch);
+                std::ptr::copy_nonoverlapping(temp_row.as_ptr(), row2, pitch);
+            }
+        }
+    }
+
     fn load_texture(texture_src: String, internal_format: i32, format: PixelFormat) -> u32 {
         let mut texture = 0;
         unsafe {
@@ -69,6 +89,7 @@ impl Shader {
                 println!("Error loading texture: {texture_src}");
                 std::process::exit(1);
             }
+            Self::flip_surface(*surface);
             glGenTextures(1, &mut texture);
             //shader.texture = texture;
             glBindTexture(GL_TEXTURE_2D, texture);
@@ -223,32 +244,32 @@ impl Shader {
             glClear(gl33::GL_COLOR_BUFFER_BIT);
         }
 
-       if self.texture != 0 {
-           unsafe {
-               glActiveTexture(GL_TEXTURE0);
-               glBindTexture(GL_TEXTURE_2D, self.texture);
-            glUniform1i(
-                glGetUniformLocation(
-                    self.shader_program, 
-                    std::ffi::CString::new("texture1").unwrap().as_ptr() as *const u8,
-                    ),
-                    0
-            );
-           }
-       }
-       if self.texture_2 != 0 {
-           unsafe {
-               glActiveTexture(GL_TEXTURE1);
-               glBindTexture(GL_TEXTURE_2D, self.texture_2);
-            glUniform1i(
-                glGetUniformLocation(
-                    self.shader_program, 
-                    std::ffi::CString::new("texture2").unwrap().as_ptr() as *const u8,
-                    ),
-                    1
-            );
-           }
-       }
+        if self.texture != 0 {
+            unsafe {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, self.texture);
+                glUniform1i(
+                    glGetUniformLocation(
+                        self.shader_program, 
+                        std::ffi::CString::new("texture1").unwrap().as_ptr() as *const u8,
+                        ),
+                        0
+                        );
+            }
+        }
+        if self.texture_2 != 0 {
+            unsafe {
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, self.texture_2);
+                glUniform1i(
+                    glGetUniformLocation(
+                        self.shader_program, 
+                        std::ffi::CString::new("texture2").unwrap().as_ptr() as *const u8,
+                        ),
+                        1
+                        );
+            }
+        }
         glUseProgram(self.shader_program);
         match self.r#type {
             TriangleType::UNIFORM   => {
