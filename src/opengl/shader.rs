@@ -13,10 +13,12 @@ pub struct Shader {
     pub vao:                    u32,
     pub vbo:                    u32,
     pub texture:                u32,
+    pub texture_2:              u32,
     pub shader_program:         u32,
     pub vertex_shader_src:      String,
     pub fragment_shader_src:    String,
     pub texture_src:            Option<String>,
+    pub texture_src_2:          Option<String>,
     pub vertices:               Vec<f32>,
     pub strides:                i32,
     pub strides_color:          i32,
@@ -59,36 +61,45 @@ impl Shader {
         shader
     }
 
-    fn load_texture(shader: &mut Shader) {
+    fn load_texture(texture_src: String, internal_format: i32, format: PixelFormat) -> u32 {
+        let mut texture = 0;
+        unsafe {
+            let surface = IMG_Load(std::ffi::CString::new(texture_src.clone()).unwrap().as_ptr());
+            if surface.is_null() {
+                println!("Error loading texture: {texture_src}");
+                std::process::exit(1);
+            }
+            glGenTextures(1, &mut texture);
+            //shader.texture = texture;
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT.0 as i32);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT.0 as i32);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR.0 as i32);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR.0 as i32);
+
+            glTexImage2D(GL_TEXTURE_2D,
+                         0,
+                         GL_RGBA.0 as i32,
+                         (*surface).w,
+                         (*surface).h,
+                         0,
+                         format, //GL_RGB,
+                         GL_UNSIGNED_BYTE,
+                         (*surface).pixels
+                        );
+            glGenerateMipmap(GL_TEXTURE_2D);
+            SDL_DestroySurface(surface);
+        }
+        return texture;
+
+    }
+
+    fn load_textures(shader: &mut Shader) {
         if let Some(texture_src) = &shader.texture_src {
             unsafe {
-
-                let surface = IMG_Load(std::ffi::CString::new(texture_src.clone()).unwrap().as_ptr());
-                if surface.is_null() {
-                    println!("Error loading texture{texture_src}");
-                    std::process::exit(1);
-                }
-                let mut texture = 0;
-                glGenTextures(1, &mut texture);
                 glEnable(GL_TEXTURE_2D);
-                shader.texture = texture;
-                glBindTexture(GL_TEXTURE_2D, texture);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT.0 as i32);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT.0 as i32);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR.0 as i32);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR.0 as i32);
-
-                glTexImage2D(GL_TEXTURE_2D,
-                             0,
-                             GL_RGBA.0 as i32,
-                             (*surface).w,
-                             (*surface).h,
-                             0,
-                             GL_BGRA,
-                             GL_UNSIGNED_BYTE,
-                             (*surface).pixels
-                            );
-                glGenerateMipmap(GL_TEXTURE_2D);
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 glVertexAttribPointer(2,
                                       2,
                                       GL_FLOAT,
@@ -97,7 +108,11 @@ impl Shader {
                                       shader.offset_texture as *const std::ffi::c_void,
                                       );
                 glEnableVertexAttribArray(2);
-                SDL_DestroySurface(surface);
+                // XXX if more than 2 texture in the turotial use a vec
+                shader.texture = Self::load_texture(texture_src.to_string(), GL_BGR.0 as i32, GL_BGRA) ;
+                if let Some(texture_src_2) = &shader.texture_src_2 {
+                    shader.texture_2 = Self::load_texture(texture_src_2.to_string(), GL_BGRA.0 as i32, GL_BGRA) ;
+                }
             }
         }
     }
@@ -184,7 +199,7 @@ impl Shader {
             glAttachShader(shader_program, fragment_shader);
             glLinkProgram(shader_program);
 
-            Self::load_texture(self);
+            Self::load_textures(self);
 
             let mut success = 0;
             glGetProgramiv(shader_program, GL_LINK_STATUS, &mut success); 
@@ -196,15 +211,45 @@ impl Shader {
 
                 panic!("Error link Program: {}", String::from_utf8_lossy(&v));
             }
-
             glDeleteShader(vertex_shader);
             glDeleteShader(fragment_shader);
             self.shader_program = shader_program;
         }
     }
 
-
     pub fn draw(&self) {
+        unsafe {
+            glClearColor(0.9, 0.3, 0.5, 0.5);
+            glClear(gl33::GL_COLOR_BUFFER_BIT);
+        }
+
+       if self.texture != 0 {
+           unsafe {
+               glActiveTexture(GL_TEXTURE0);
+               glBindTexture(GL_TEXTURE_2D, self.texture);
+            glUniform1i(
+                glGetUniformLocation(
+                    self.shader_program, 
+                    std::ffi::CString::new("texture1").unwrap().as_ptr() as *const u8,
+                    ),
+                    0
+            );
+           }
+       }
+       if self.texture_2 != 0 {
+           unsafe {
+               glActiveTexture(GL_TEXTURE1);
+               glBindTexture(GL_TEXTURE_2D, self.texture_2);
+            glUniform1i(
+                glGetUniformLocation(
+                    self.shader_program, 
+                    std::ffi::CString::new("texture2").unwrap().as_ptr() as *const u8,
+                    ),
+                    1
+            );
+           }
+       }
+        glUseProgram(self.shader_program);
         match self.r#type {
             TriangleType::UNIFORM   => {
                 unsafe {
@@ -217,11 +262,6 @@ impl Shader {
             TriangleType::NORMAL    => {
 
             },
-        }
-        if self.texture != 0 {
-            unsafe {
-                glBindTexture(GL_TEXTURE_2D, self.texture);    
-            }
         }
         glBindVertexArray(self.vao);
         match &self.opt_indices {

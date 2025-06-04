@@ -13,6 +13,7 @@ fn print_help(exit: i32) -> ! {
             6: print simple triangle fragment interpollation
             7: print simple triangle texture
             8: print simple rectangle texture
+            9: print simple rectangle with 2 textures overlaping
             help:
                 print this help
     ";
@@ -25,7 +26,7 @@ fn main() {
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
     let shader: opengl::shader::Shader;
 
-    let funcs: [fn() -> opengl::shader::Shader; 8] = [
+    let funcs: [fn() -> opengl::shader::Shader; 9] = [
         opengl::draw_simple_triangle,
         opengl::draw_simple_rectangle,
         opengl::draw_simple_rectangle_with_indices,
@@ -33,7 +34,8 @@ fn main() {
         opengl::draw_simple_triangle_uniform,
         opengl::draw_simple_triangle_fragment_interpollation,
         opengl::draw_simple_triangle_texture,
-        opengl::draw_simple_rectangle_texture
+        opengl::draw_simple_rectangle_texture,
+        opengl::draw_simple_rectangle_happy_face_texture,
     ];
 
     match std::env::args().nth(1) {
@@ -69,11 +71,6 @@ loop {
             if sdl::event::SDL_PollEvent(raw.as_mut_ptr()) == true {
                 sdl::event::parse_event(raw.assume_init());
             }
-            glClearColor(0.9, 0.3, 0.5, 0.5);
-            glClear(gl33::GL_COLOR_BUFFER_BIT);
-
-            glUseProgram(shader.shader_program);
-
             shader.draw();
 
             sdl::SDL_GL_SwapWindow(sdl.window);
