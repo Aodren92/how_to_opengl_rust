@@ -310,3 +310,41 @@ pub fn draw_simple_rectangle_happy_face_texture() -> shader::Shader {
     return shader;
 }
 
+
+pub fn draw_simple_rectangle_transform() -> shader::Shader {
+
+    let vertices = Vec::from([
+            //positions         //colors            // textTures color
+             0.5,  0.5, 0.0,    1.0, 0.0, 0.0,      1.0, 1.0,
+             0.5, -0.5, 0.0,    0.0, 1.0, 0.0,      1.0, 0.0,
+            -0.5, -0.5, 0.0,    0.0, 0.0, 1.0,      0.0, 0.0,
+            -0.5,  0.5, 0.0,    1.0, 1.0, 0.0,      0.0, 1.0,
+    ]);
+
+    let indices = Vec::from([
+                0, 1, 3,
+                1, 2, 3
+    ]);
+
+    let mut shader: shader::Shader = shader::Shader { 
+        vao:                    0,
+        vbo:                    0,
+        texture:                0,
+        texture_2:              0,
+        shader_program:         0,
+        vertex_shader_src:      String::from("shader/simple_vertex_texture.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment_double_texture.frag"),
+        texture_src:            Some(String::from("assets/container.jpg")),
+        texture_src_2:          Some(String::from("assets/awesomeface.png")),
+        vertices:               vertices,
+        strides:                8 * std::mem::size_of::<f32>() as i32,
+        strides_color:          8 * std::mem::size_of::<f32>() as i32,
+        offset_color:           (3 * std::mem::size_of::<f32>()) as i32,
+        strides_texture:        8 * std::mem::size_of::<f32>() as i32,
+        offset_texture:         (6 * std::mem::size_of::<f32>()) as i32,
+        opt_indices:            Some(indices),
+        r#type:                 shader::TriangleType::NORMAL,
+    };
+    shader.load();
+    return shader;
+}
