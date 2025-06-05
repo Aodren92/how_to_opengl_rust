@@ -26,7 +26,7 @@ pub struct Shader {
     pub strides_texture:        i32,
     pub offset_texture:         i32,
     pub opt_indices:            Option<Vec<u32>>,
-    pub r#type:                 TriangleType,
+    pub transform:              Option<fn(&Shader) -> ()>
 }
 
 impl Shader {
@@ -244,6 +244,7 @@ impl Shader {
             glClear(gl33::GL_COLOR_BUFFER_BIT);
         }
 
+
         if self.texture != 0 {
             unsafe {
                 glActiveTexture(GL_TEXTURE0);
@@ -270,20 +271,25 @@ impl Shader {
                         );
             }
         }
-        glUseProgram(self.shader_program);
-        match self.r#type {
-            TriangleType::UNIFORM   => {
-                unsafe {
-                    let time_value = (sdl::SDL_GetTicks() as f32 / 1000.0) as f32;
-                    let green_value = time_value.sin() / 2.0 + 0.5;
-                    let vertex_color_location = glGetUniformLocation(self.shader_program, std::ffi::CString::new("ourColor").unwrap().as_ptr() as *const u8);
-                    glUniform4f(vertex_color_location, 0.0, green_value as f32, 0.0, 1.0);
-                }
-            },
-            TriangleType::NORMAL    => {
 
-            },
+        glUseProgram(self.shader_program);
+
+        if let Some(transform) = self.transform {
+            transform(self);
         }
+
+
+
+
+        //match self.r#type {
+        //    TriangleType::UNIFORM   => {
+        //        unsafe {
+        //        }
+        //    },
+        //    TriangleType::NORMAL    => {
+
+        //    },
+        //}
         glBindVertexArray(self.vao);
         match &self.opt_indices {
             Some(indices) => {

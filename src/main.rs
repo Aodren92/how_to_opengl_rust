@@ -1,6 +1,5 @@
 mod sdl;
 mod opengl;
-use gl33::global_loader::*;
 
 fn print_help(exit: i32) -> ! {
     let str = r"

@@ -1,4 +1,7 @@
 pub mod shader;
+use nalgebra_glm;
+use gl33::global_loader::*;
+use crate::sdl;
 
 pub fn draw_simple_triangle() -> shader::Shader {
 
@@ -25,7 +28,7 @@ pub fn draw_simple_triangle() -> shader::Shader {
         strides_texture:        0,
         offset_texture:         0,
         opt_indices:            None,
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
     };
     shader.load();
     return shader;
@@ -56,7 +59,7 @@ pub fn draw_simple_triangle_color() -> shader::Shader {
         strides_texture:        0,
         offset_texture:         0,
         opt_indices:            None,
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
     };
     shader.load();
     return shader;
@@ -91,7 +94,7 @@ pub fn draw_simple_rectangle() -> shader::Shader {
         strides_texture:        0,
         offset_texture:         0,
         opt_indices:            None,
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
     };
     shader.load();
     return shader;
@@ -129,7 +132,7 @@ pub fn draw_simple_rectangle_with_indices() -> shader::Shader {
         strides_texture:        0,
         offset_texture:         0,
         opt_indices:            Some(indices),
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
     };
     shader.load();
     return shader;
@@ -162,7 +165,7 @@ pub fn draw_simple_triangle_uniform() -> shader::Shader {
         strides_texture:        0,
         offset_texture:         0,
         opt_indices:            None,
-        r#type:                 shader::TriangleType::UNIFORM,
+        transform:              Some(simple_color_change),
     };
     shader.load();
     return shader;
@@ -195,7 +198,8 @@ pub fn draw_simple_triangle_fragment_interpollation() -> shader::Shader {
         strides_texture:        0,
         offset_texture:         0,
         opt_indices:            None,
-        r#type:                 shader::TriangleType::UNIFORM,
+        transform:              None,
+        //r#type:                 shader::TriangleType::UNIFORM,
     };
     shader.load();
     return shader;
@@ -227,7 +231,8 @@ pub fn draw_simple_triangle_texture() -> shader::Shader {
         strides_texture:        8 * std::mem::size_of::<f32>() as i32,
         offset_texture:         (6 * std::mem::size_of::<f32>()) as i32,
         opt_indices:            None,
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
+        //r#type:                 shader::TriangleType::NORMAL,
     };
     shader.load();
     return shader;
@@ -266,7 +271,7 @@ pub fn draw_simple_rectangle_texture() -> shader::Shader {
         strides_texture:        8 * std::mem::size_of::<f32>() as i32,
         offset_texture:         (6 * std::mem::size_of::<f32>()) as i32,
         opt_indices:            Some(indices),
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
     };
     shader.load();
     return shader;
@@ -304,7 +309,7 @@ pub fn draw_simple_rectangle_happy_face_texture() -> shader::Shader {
         strides_texture:        8 * std::mem::size_of::<f32>() as i32,
         offset_texture:         (6 * std::mem::size_of::<f32>()) as i32,
         opt_indices:            Some(indices),
-        r#type:                 shader::TriangleType::NORMAL,
+        transform:              None,
     };
     shader.load();
     return shader;
@@ -326,13 +331,14 @@ pub fn draw_simple_rectangle_transform() -> shader::Shader {
                 1, 2, 3
     ]);
 
+
     let mut shader: shader::Shader = shader::Shader { 
         vao:                    0,
         vbo:                    0,
         texture:                0,
         texture_2:              0,
         shader_program:         0,
-        vertex_shader_src:      String::from("shader/simple_vertex_texture.vert"),
+        vertex_shader_src:      String::from("shader/simple_vertex_texture_transform.vert"),
         fragment_shader_src:    String::from("shader/simple_fragment_double_texture.frag"),
         texture_src:            Some(String::from("assets/container.jpg")),
         texture_src_2:          Some(String::from("assets/awesomeface.png")),
@@ -343,8 +349,31 @@ pub fn draw_simple_rectangle_transform() -> shader::Shader {
         strides_texture:        8 * std::mem::size_of::<f32>() as i32,
         offset_texture:         (6 * std::mem::size_of::<f32>()) as i32,
         opt_indices:            Some(indices),
-        r#type:                 shader::TriangleType::NORMAL,
-    };
+        transform:              Some(simple_transform_and_rotate),
+};
     shader.load();
     return shader;
+}
+
+pub fn simple_transform_and_rotate(shader: &shader::Shader) {
+
+    let mut trans = nalgebra_glm::Mat4::identity();
+    trans = nalgebra_glm::rotate(&trans, 90.0_f32.to_radians(), &nalgebra_glm::vec3(0.0, 0.0, 1.0));
+    trans = nalgebra_glm::scale(&trans, &nalgebra_glm::vec3(0.5, 0.5, 0.5));
+    unsafe {
+        let transform_loc = glGetUniformLocation(shader.shader_program,
+                                                 std::ffi::CString::new("transform").unwrap().as_ptr() as *const u8,
+                                                 );
+        glUniformMatrix4fv(transform_loc, 1, 0, trans.as_ptr());
+    }
+}
+
+pub fn simple_color_change(shader: &shader::Shader) {
+
+    unsafe {
+        let time_value = (sdl::SDL_GetTicks() as f32 / 1000.0) as f32;
+        let green_value = time_value.sin() / 2.0 + 0.5;
+        let vertex_color_location = glGetUniformLocation(shader.shader_program, std::ffi::CString::new("ourColor").unwrap().as_ptr() as *const u8);
+        glUniform4f(vertex_color_location, 0.0, green_value as f32, 0.0, 1.0);
+    }
 }
