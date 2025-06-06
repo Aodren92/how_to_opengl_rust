@@ -26,7 +26,7 @@ fn main() {
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
     let shader: opengl::shader::Shader;
 
-    let funcs: [fn() -> opengl::shader::Shader; 11] = [
+    let funcs: [fn() -> opengl::shader::Shader; 12] = [
         opengl::draw_simple_triangle,
         opengl::draw_simple_rectangle,
         opengl::draw_simple_rectangle_with_indices,
@@ -38,6 +38,7 @@ fn main() {
         opengl::draw_simple_rectangle_happy_face_texture,
         opengl::draw_simple_rectangle_transform,
         opengl::draw_simple_rectangle_transform_rotate_over_time,
+        opengl::draw_rectangle_on_floor,
     ];
 
     match std::env::args().nth(1) {

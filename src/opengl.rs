@@ -432,3 +432,71 @@ pub fn simple_color_change(shader: &shader::Shader) {
         glUniform4f(vertex_color_location, 0.0, green_value as f32, 0.0, 1.0);
     }
 }
+
+/******************************************************************************
+ **                             3D
+******************************************************************************/
+
+pub fn draw_rectangle_on_floor() -> shader::Shader {
+
+    let vertices = Vec::from([
+            //positions         //colors            // textTures color
+             0.5,  0.5, 0.0,    1.0, 0.0, 0.0,      1.0, 1.0,
+             0.5, -0.5, 0.0,    0.0, 1.0, 0.0,      1.0, 0.0,
+            -0.5, -0.5, 0.0,    0.0, 0.0, 1.0,      0.0, 0.0,
+            -0.5,  0.5, 0.0,    1.0, 1.0, 0.0,      0.0, 1.0,
+    ]);
+
+    let indices = Vec::from([
+                0, 1, 3,
+                1, 2, 3
+    ]);
+
+
+    let mut shader: shader::Shader = shader::Shader { 
+        vao:                    0,
+        vbo:                    0,
+        texture:                0,
+        texture_2:              0,
+        shader_program:         0,
+        vertex_shader_src:      String::from("shader/simple_vertex_3D.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment_double_texture.frag"),
+        texture_src:            Some(String::from("assets/container.jpg")),
+        texture_src_2:          Some(String::from("assets/awesomeface.png")),
+        vertices:               vertices,
+        strides:                8 * std::mem::size_of::<f32>() as i32,
+        strides_color:          8 * std::mem::size_of::<f32>() as i32,
+        offset_color:           (3 * std::mem::size_of::<f32>()) as i32,
+        strides_texture:        8 * std::mem::size_of::<f32>() as i32,
+        offset_texture:         (6 * std::mem::size_of::<f32>()) as i32,
+        opt_indices:            Some(indices),
+        transform:              Some(transform_on_floor),
+};
+    shader.load();
+    return shader;
+}
+
+pub fn transform_on_floor(shader: &shader::Shader) {
+
+    let trans = nalgebra_glm::Mat4::identity();
+    let model = nalgebra_glm::rotate(&trans, -55.0_f32.to_radians(), &nalgebra_glm::vec3(1.0, 0.0, 0.0));
+    let view = nalgebra_glm::translate(&trans, &nalgebra_glm::vec3(0.0, 0.0, -3.0));
+    //XXX get size of the screen
+    let projection = nalgebra_glm::perspective(45.0_f32.to_radians(), 800.0 / 600.0, 0.1, 100.0);
+
+
+    unsafe {
+        let model_loc = glGetUniformLocation(shader.shader_program,
+                                                 std::ffi::CString::new("model").unwrap().as_ptr() as *const u8,
+                                                 );
+        glUniformMatrix4fv(model_loc, 1, 0, model.as_ptr());
+        let view_loc = glGetUniformLocation(shader.shader_program,
+                                                 std::ffi::CString::new("view").unwrap().as_ptr() as *const u8,
+                                                 );
+        glUniformMatrix4fv(view_loc, 1, 0, view.as_ptr());
+        let projection_loc = glGetUniformLocation(shader.shader_program,
+                                                 std::ffi::CString::new("projection").unwrap().as_ptr() as *const u8,
+                                                 );
+        glUniformMatrix4fv(projection_loc, 1, 0, projection.as_ptr());
+    }
+}
