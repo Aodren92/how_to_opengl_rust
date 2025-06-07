@@ -14,6 +14,9 @@ fn print_help(exit: i32) -> ! {
             8:  print simple rectangle texture
             9:  print simple rectangle with 2 textures overlaping
             10: print simple rectangle with a 90rad rotation
+            11: print simple rectangle with a 90rad rotation over time
+            12: print simple rectangle as floor
+            13: print a rotating cube
             help:
                 print this help
     ";
@@ -26,7 +29,7 @@ fn main() {
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
     let shader: opengl::shader::Shader;
 
-    let funcs: [fn() -> opengl::shader::Shader; 12] = [
+    let funcs: [fn() -> opengl::shader::Shader; 14] = [
         opengl::draw_simple_triangle,
         opengl::draw_simple_rectangle,
         opengl::draw_simple_rectangle_with_indices,
@@ -39,6 +42,8 @@ fn main() {
         opengl::draw_simple_rectangle_transform,
         opengl::draw_simple_rectangle_transform_rotate_over_time,
         opengl::draw_rectangle_on_floor,
+        opengl::draw_cube,
+        opengl::draw_10_cubes
     ];
 
     match std::env::args().nth(1) {
@@ -74,7 +79,7 @@ loop {
             if sdl::event::SDL_PollEvent(raw.as_mut_ptr()) == true {
                 sdl::event::parse_event(raw.assume_init());
             }
-            shader.draw();
+            shader.draw(&sdl);
 
             sdl::SDL_GL_SwapWindow(sdl.window);
             sdl::SDL_Delay(20);

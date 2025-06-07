@@ -183,7 +183,7 @@ unsafe extern "C" {
     pub fn IMG_Load(file: *const std::ffi::c_char) -> *mut surface::SDLSurface; 
     pub fn SDL_DestroySurface(surface: *mut surface::SDLSurface);
 
-    pub fn SDL_GetWindowSize(window: *mut SDL_Window,w: *mut i32, h: *mut i32);
+    pub fn SDL_GetWindowSize(window: *mut SDL_Window, w: *mut i32, h: *mut i32);
 }
 
 

@@ -26,7 +26,9 @@ pub struct Shader {
     pub strides_texture:        i32,
     pub offset_texture:         i32,
     pub opt_indices:            Option<Vec<u32>>,
-    pub transform:              Option<fn(&Shader) -> ()>
+    // XXX merge transform/draw
+    pub transform:              Option<fn(&Shader, &SDL) -> ()>,
+    pub draw:                   Option<fn(&Shader, &SDL) -> ()> 
 }
 
 impl Shader {
@@ -238,10 +240,10 @@ impl Shader {
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self, sdl: &SDL) {
         unsafe {
             glClearColor(0.9, 0.3, 0.5, 0.5);
-            glClear(gl33::GL_COLOR_BUFFER_BIT);
+            glClear(gl33::GL_COLOR_BUFFER_BIT | gl33::GL_DEPTH_BUFFER_BIT);
         }
 
 
@@ -271,37 +273,26 @@ impl Shader {
                         );
             }
         }
-
-        glUseProgram(self.shader_program);
-
         if let Some(transform) = self.transform {
-            transform(self);
+            transform(self, sdl);
         }
-
-
-
-
-        //match self.r#type {
-        //    TriangleType::UNIFORM   => {
-        //        unsafe {
-        //        }
-        //    },
-        //    TriangleType::NORMAL    => {
-
-        //    },
-        //}
-        glBindVertexArray(self.vao);
-        match &self.opt_indices {
-            Some(indices) => {
-                unsafe {
-                    glDrawElements(GL_TRIANGLES, indices.len() as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
-                }
-            },
-            None => {
-                unsafe {
-                    glDrawArrays(GL_TRIANGLES, 0, self.vertices.len() as i32)
+        if let Some(draw) = self.draw {
+            draw(self, sdl);
+        } else {
+            match &self.opt_indices {
+                Some(indices) => {
+                    unsafe {
+                        glDrawElements(GL_TRIANGLES, indices.len() as i32, gl33::GL_UNSIGNED_INT, std::ptr::null());
+                    }
+                },
+                None => {
+                    unsafe {
+                        glDrawArrays(GL_TRIANGLES, 0, self.vertices.len() as i32)
+                    }
                 }
             }
         }
+        glUseProgram(self.shader_program);
+        glBindVertexArray(self.vao);
     }
 }
