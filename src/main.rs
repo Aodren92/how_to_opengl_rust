@@ -17,6 +17,8 @@ fn print_help(exit: i32) -> ! {
             11: print simple rectangle with a 90rad rotation over time
             12: print simple rectangle as floor
             13: print a rotating cube
+            14: draw 10 cubes
+            15: draw 10 cubes rotate
             help:
                 print this help
     ";
@@ -29,7 +31,7 @@ fn main() {
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
     let shader: opengl::shader::Shader;
 
-    let funcs: [fn() -> opengl::shader::Shader; 14] = [
+    let funcs: [fn() -> opengl::shader::Shader; 15] = [
         opengl::draw_simple_triangle,
         opengl::draw_simple_rectangle,
         opengl::draw_simple_rectangle_with_indices,
@@ -43,7 +45,8 @@ fn main() {
         opengl::draw_simple_rectangle_transform_rotate_over_time,
         opengl::draw_rectangle_on_floor,
         opengl::draw_cube,
-        opengl::draw_10_cubes
+        opengl::draw_10_cubes,
+        opengl::draw_10_cubes_rotate
     ];
 
     match std::env::args().nth(1) {
