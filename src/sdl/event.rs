@@ -1,6 +1,14 @@
 use crate::sdl;
 
 
+pub const SDL_EVENT_QUIT: u32 = 0x100; 
+pub const SDL_EVENT_KEY_DOWN : u32 = 0x300; 
+
+pub const SDLK_RIGHT:   u32 = 0x4000004f; /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RIGHT) */
+pub const SDLK_LEFT:    u32 = 0x40000050; /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_LEFT) */
+pub const SDLK_DOWN:    u32 = 0x40000051; /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_DOWN) */
+pub const SDLK_UP:      u32 = 0x40000052; /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_UP) */
+
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct SDL_KeyboardEvent
@@ -39,12 +47,21 @@ impl SDL_Event {
     }
 }
 
+
+
 pub fn parse_event(event: SDL_Event) {
     let event_type = unsafe { event.type_ };
 
-    if event_type == 0x100 {
+    if event_type == SDL_EVENT_QUIT {
         std::process::exit(1);
-    } else if event_type == 0x300 {
-        let _sdl_keyboard_event_: SDL_KeyboardEvent = unsafe { event.keyboard_event };
-    }
+    } else if event_type == SDL_EVENT_KEY_DOWN {
+        let sdl_keyboard_event: SDL_KeyboardEvent = unsafe { event.keyboard_event };
+        match sdl_keyboard_event.key {
+            SDLK_UP     => println!("SDLK_UP"),
+            SDLK_DOWN   => println!("SDLK_DOWN"),
+            SDLK_LEFT   => println!("SDLK_LEFT"),
+            SDLK_RIGHT  => println!("SDLK_RIGHT"),
+            _           => {},
+        }
+    } 
 }
