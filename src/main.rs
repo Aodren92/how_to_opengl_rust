@@ -1,5 +1,7 @@
 mod sdl;
 mod opengl;
+mod camera;
+
 
 fn print_help(exit: i32) -> ! {
     let str = r"
@@ -29,9 +31,9 @@ fn print_help(exit: i32) -> ! {
 
 fn main() {
     let sdl = sdl::SDL::init(sdl::SDL_INIT_EVERYTHING);
-    let shader: opengl::shader::Shader;
+    let mut shader: opengl::shader::Shader;
 
-    let funcs: [fn() -> opengl::shader::Shader; 15] = [
+    let funcs: [fn() -> opengl::shader::Shader; 16] = [
         opengl::draw_simple_triangle,
         opengl::draw_simple_rectangle,
         opengl::draw_simple_rectangle_with_indices,
@@ -46,7 +48,8 @@ fn main() {
         opengl::draw_rectangle_on_floor,
         opengl::draw_cube,
         opengl::draw_10_cubes,
-        opengl::draw_10_cubes_rotate
+        opengl::draw_10_cubes_rotate,
+        opengl::draw_10_cubes_move_camera,
     ];
 
     match std::env::args().nth(1) {
@@ -76,14 +79,23 @@ fn main() {
         }
     }
 
+let mut camera = camera::Camera::init();
+let mut delta_time;
+let mut last_frame = 0.0;
+
 loop {
+
+    let current_frame = unsafe { sdl::SDL_GetTicks() as f32 / 1000.0 } as f32;
+    delta_time = current_frame - last_frame;
+    last_frame = current_frame;
         unsafe {
             let mut raw = std::mem::MaybeUninit::uninit();
             if sdl::event::SDL_PollEvent(raw.as_mut_ptr()) == true {
-                sdl::event::parse_event(raw.assume_init());
+                let event = sdl::event::parse_event(raw.assume_init());
+                println!("{event:?}");
+                camera.update(event, delta_time as f32);
             }
-            shader.draw(&sdl);
-
+            shader.draw(&sdl, &camera);
             sdl::SDL_GL_SwapWindow(sdl.window);
             sdl::SDL_Delay(20);
         }

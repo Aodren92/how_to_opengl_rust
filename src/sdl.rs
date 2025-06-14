@@ -1,12 +1,13 @@
 pub mod event;
 pub mod surface;
 use gl33::global_loader::load_global_gl;
+use crate::opengl;
 
 type InitFlag = u32;
 type SDLWindowID = u32;
-type SDLKeyboardID = u32;
+pub type SDLKeyboardID = u32;
 type SDLScancode = u32;
-type SDLKeycode = u32;
+pub type SDLKeycode = u32;
 type SDLKeymod = u16;
 
 

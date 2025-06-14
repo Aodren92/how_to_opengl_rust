@@ -49,19 +49,32 @@ impl SDL_Event {
 
 
 
-pub fn parse_event(event: SDL_Event) {
+pub fn parse_event(event: SDL_Event) -> Option<sdl::SDLKeycode> {
     let event_type = unsafe { event.type_ };
 
     if event_type == SDL_EVENT_QUIT {
         std::process::exit(1);
     } else if event_type == SDL_EVENT_KEY_DOWN {
         let sdl_keyboard_event: SDL_KeyboardEvent = unsafe { event.keyboard_event };
-        match sdl_keyboard_event.key {
-            SDLK_UP     => println!("SDLK_UP"),
-            SDLK_DOWN   => println!("SDLK_DOWN"),
-            SDLK_LEFT   => println!("SDLK_LEFT"),
-            SDLK_RIGHT  => println!("SDLK_RIGHT"),
-            _           => {},
-        }
+        return match sdl_keyboard_event.key {
+            SDLK_UP     => {
+                println!("SDLK_UP");
+                Some(SDLK_UP)
+            },
+            SDLK_DOWN   => {
+                println!("SDLK_DOWN");
+                Some(SDLK_DOWN)
+            },
+            SDLK_LEFT   => {
+                println!("SDLK_LEFT");
+                Some(SDLK_LEFT)
+            },
+            SDLK_RIGHT  => {
+                println!("SDLK_RIGHT");
+                Some(SDLK_RIGHT)
+            },
+            _           => None,
+        };
     } 
+    None
 }

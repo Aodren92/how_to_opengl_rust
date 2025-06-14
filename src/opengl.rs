@@ -2,6 +2,8 @@ pub mod shader;
 use nalgebra_glm;
 use gl33::global_loader::*;
 use crate::sdl;
+use crate::camera;
+
 
 pub fn draw_simple_triangle() -> shader::Shader {
 
@@ -698,7 +700,7 @@ pub fn draw_10_cubes() -> shader::Shader {
 }
 
 
-pub fn draw_10_cubes_(shader: &shader::Shader, sdl: &sdl::SDL) {
+pub fn draw_10_cubes_(shader: &mut shader::Shader, sdl: &sdl::SDL, _camera: &camera::Camera) {
     let cube_positions = [
         nalgebra_glm::vec3( 0.0,  0.0,  0.0), 
         nalgebra_glm::vec3( 2.0,  5.0, -15.0), 
@@ -828,7 +830,7 @@ pub fn draw_10_cubes_rotate() -> shader::Shader {
 }
 
 
-pub fn draw_10_cubes_rotate_(shader: &shader::Shader, sdl: &sdl::SDL) {
+pub fn draw_10_cubes_rotate_(shader: &mut shader::Shader, sdl: &sdl::SDL, _camera: &camera::Camera) {
     let cube_positions = [
         nalgebra_glm::vec3( 0.0,  0.0,  0.0), 
         nalgebra_glm::vec3( 2.0,  5.0, -15.0), 
@@ -863,6 +865,140 @@ pub fn draw_10_cubes_rotate_(shader: &shader::Shader, sdl: &sdl::SDL) {
                                             );
         glUniformMatrix4fv(view_loc, 1, 0, view.as_ptr());
     }
+
+    for i in 0..10 {
+        unsafe {
+
+            //XXX get size of the screen
+
+            let model = nalgebra_glm::translate(&identity, &cube_positions[i]);
+            let model = nalgebra_glm::rotate(&model, i as f32 * 20.0_f32.to_radians(), &nalgebra_glm::vec3(0.5, 1.0, 0.0));
+            let model = nalgebra_glm::rotate(&model, i as f32 * 20.0_f32.to_radians(), &nalgebra_glm::vec3(1.0, 0.3, 0.5));
+            let mut w: i32 = 0;
+            let mut h: i32 = 0;
+
+            sdl::SDL_GetWindowSize(sdl.window, &mut w as *mut i32, &mut h as *mut i32);
+
+            let projection = nalgebra_glm::perspective(45.0_f32.to_radians(), w as f32 / h as f32, 0.1, 100.0);
+
+
+            let model_loc = glGetUniformLocation(shader.shader_program,
+                                             std::ffi::CString::new("model").unwrap().as_ptr() as *const u8,
+                                                 );
+            glUniformMatrix4fv(model_loc, 1, 0, model.as_ptr());
+            let projection_loc = glGetUniformLocation(shader.shader_program,
+                                                      std::ffi::CString::new("projection").unwrap().as_ptr() as *const u8,
+                                                      );
+            glUniformMatrix4fv(projection_loc, 1, 0, projection.as_ptr());
+            glDrawArrays(gl33::GL_TRIANGLES, 0, shader.vertices.len() as i32)
+        }
+    }
+}
+
+pub fn draw_10_cubes_move_camera() -> shader::Shader {
+
+    let vertices = Vec::from([
+    -0.5, -0.5, -0.5,  0.0, 0.0,
+     0.5, -0.5, -0.5,  1.0, 0.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+    -0.5,  0.5, -0.5,  0.0, 1.0,
+    -0.5, -0.5, -0.5,  0.0, 0.0,
+
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+     0.5, -0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 1.0,
+     0.5,  0.5,  0.5,  1.0, 1.0,
+    -0.5,  0.5,  0.5,  0.0, 1.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+
+    -0.5,  0.5,  0.5,  1.0, 0.0,
+    -0.5,  0.5, -0.5,  1.0, 1.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+    -0.5,  0.5,  0.5,  1.0, 0.0,
+
+     0.5,  0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+     0.5, -0.5, -0.5,  0.0, 1.0,
+     0.5, -0.5, -0.5,  0.0, 1.0,
+     0.5, -0.5,  0.5,  0.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+     0.5, -0.5, -0.5,  1.0, 1.0,
+     0.5, -0.5,  0.5,  1.0, 0.0,
+     0.5, -0.5,  0.5,  1.0, 0.0,
+    -0.5, -0.5,  0.5,  0.0, 0.0,
+    -0.5, -0.5, -0.5,  0.0, 1.0,
+
+    -0.5,  0.5, -0.5,  0.0, 1.0,
+     0.5,  0.5, -0.5,  1.0, 1.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+     0.5,  0.5,  0.5,  1.0, 0.0,
+    -0.5,  0.5,  0.5,  0.0, 0.0,
+    -0.5,  0.5, -0.5,  0.0, 1.0
+
+    ]);
+
+
+    let mut shader: shader::Shader = shader::Shader { 
+        vao:                    0,
+        vbo:                    0,
+        texture:                0,
+        texture_2:              0,
+        shader_program:         0,
+        vertex_shader_src:      String::from("shader/simple_vertex_3D.vert"),
+        fragment_shader_src:    String::from("shader/simple_fragment_double_texture.frag"),
+        texture_src:            Some(String::from("assets/container.jpg")),
+        texture_src_2:          Some(String::from("assets/awesomeface.png")),
+        vertices:               vertices,
+        strides:                5 * std::mem::size_of::<f32>() as i32,
+        strides_color:          0 as i32,
+        offset_color:           0 as i32,
+        strides_texture:        5 * std::mem::size_of::<f32>() as i32,
+        offset_texture:         (3 * std::mem::size_of::<f32>()) as i32,
+        opt_indices:            None,
+        transform:              None,
+        draw:                   Some(draw_10_cubes_move_camera_),
+    };
+    unsafe {
+        glEnable(gl33::GL_DEPTH_TEST);
+    }
+    shader.load();
+    return shader;
+}
+
+
+pub fn draw_10_cubes_move_camera_(shader: &mut shader::Shader, sdl: &sdl::SDL, camera: &camera::Camera) {
+    let cube_positions = [
+        nalgebra_glm::vec3( 0.0,  0.0,  0.0), 
+        nalgebra_glm::vec3( 2.0,  5.0, -15.0), 
+        nalgebra_glm::vec3(-1.5, -2.2, -2.5),  
+        nalgebra_glm::vec3(-3.8, -2.0, -12.3),  
+        nalgebra_glm::vec3( 2.4, -0.4, -3.5),
+        nalgebra_glm::vec3(-1.7,  3.0, -7.5),
+        nalgebra_glm::vec3( 1.3, -2.0, -2.5),
+        nalgebra_glm::vec3( 1.5,  2.0, -2.5),
+        nalgebra_glm::vec3( 1.5,  0.2, -1.5),
+        nalgebra_glm::vec3(-1.3,  1.0, -1.5)
+    ];
+
+    let identity = nalgebra_glm::Mat4::identity();
+
+
+
+    unsafe {
+        let center = camera.camera_pos + camera.camera_front;
+        let view = nalgebra_glm::look_at(&camera.camera_pos, &center, &camera.camera_up);
+
+        let view_loc = glGetUniformLocation(shader.shader_program,
+                                            std::ffi::CString::new("view").unwrap().as_ptr() as *const u8,
+                                            );
+        glUniformMatrix4fv(view_loc, 1, 0, view.as_ptr());
+    }
+
 
     for i in 0..10 {
         unsafe {

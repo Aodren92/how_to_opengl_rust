@@ -3,6 +3,7 @@ use gl33::*;
 use gl33::global_loader::*;
 use crate::sdl;
 use crate::sdl::*;
+use crate::camera;
 
 pub enum TriangleType {
     NORMAL,
@@ -28,7 +29,7 @@ pub struct Shader {
     pub opt_indices:            Option<Vec<u32>>,
     // XXX merge transform/draw
     pub transform:              Option<fn(&Shader, &SDL) -> ()>,
-    pub draw:                   Option<fn(&Shader, &SDL) -> ()> 
+    pub draw:                   Option<fn(&mut Shader, &SDL, &camera::Camera) -> ()>
 }
 
 impl Shader {
@@ -240,7 +241,7 @@ impl Shader {
         }
     }
 
-    pub fn draw(&self, sdl: &SDL) {
+    pub fn draw(&mut self, sdl: &SDL, camera: &camera::Camera) {
         unsafe {
             glClearColor(0.9, 0.3, 0.5, 0.5);
             glClear(gl33::GL_COLOR_BUFFER_BIT | gl33::GL_DEPTH_BUFFER_BIT);
@@ -277,7 +278,7 @@ impl Shader {
             transform(self, sdl);
         }
         if let Some(draw) = self.draw {
-            draw(self, sdl);
+            draw(self, sdl, camera);
         } else {
             match &self.opt_indices {
                 Some(indices) => {
